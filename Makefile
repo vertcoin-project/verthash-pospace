@@ -5,7 +5,7 @@ h1:
 
 h2:
 	gcc h2.c BLAKE2/sse/blake2b.c -o h2 
-	
+
 clean:
 	@echo "Cleaning up..."
-	rm h1 h2
+	rm -f h1 h2
