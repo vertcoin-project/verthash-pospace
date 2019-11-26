@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "tiny_sha3/sha3.h"
 
@@ -12,16 +13,18 @@ struct Graph {
     int64_t log2;
     int64_t pow2;
     uint8_t* pk;
-    int64_t size;
     int64_t index;
     char* fileName;
 };
 
+/*
+
+// printBytes used for debugging
 void printBytes(uint8_t* bytes, int len) {
     for(int i = 0; i < len; i++) {
         printf("%02x", bytes[i]);
     }
-}
+}*/
 
 int64_t Log2(int64_t x) {
     int64_t r = 0;
@@ -387,8 +390,7 @@ void XiGraphIter(struct Graph* g, int64_t index) {
     }
 }
 
-
-struct Graph* NewGraph(int64_t index, int64_t size, int64_t pow2, int64_t log2, char* fileName, uint8_t* pk) {
+struct Graph* NewGraph(int64_t index, int64_t size, char* fileName, uint8_t* pk) {
     uint8_t exists = 0;
     FILE* db;
     if((db = fopen(fileName, "r")) != NULL) {
@@ -397,12 +399,15 @@ struct Graph* NewGraph(int64_t index, int64_t size, int64_t pow2, int64_t log2, 
     }
 
     db = fopen(fileName, "wb+");
+    
+    int64_t log2 = Log2(size) + 1;
+    int64_t pow2 = 1 << ((uint64_t)log2);
+    
     struct Graph *g = malloc(sizeof(struct Graph));
     g->db = db;
     g->log2 = log2;
     g->pow2 = pow2;
     g->pk = pk;
-    g->size = size;
     g->index = index;
     g->fileName = fileName;
 
@@ -414,28 +419,19 @@ struct Graph* NewGraph(int64_t index, int64_t size, int64_t pow2, int64_t log2, 
 }
 
 int main() { 
+    clock_t start, end;
+    double cpu_time_used;
 
-/*    // TEST Varint
-    uint8_t* buf = malloc(NODE_SIZE);
-    WriteVarInt(buf, 131072);
-    return 0;
-*/
-    // TEST
+    printf("Generating PoS file...\n");
     int64_t index = 16;
     int64_t size = 16777216;
-    int64_t log2 = Log2(size) + 1;
-    int64_t pow2 = 1 << ((uint64_t)log2);
-
-    //printf("index: %ld - size: %ld, pow2: %ld, log2: %ld\n", index, size, pow2, log2);
-
     char* hashInput = "Vertcoin PoS PoC";
     uint8_t* pk = malloc(NODE_SIZE);
     sha3(hashInput, 16, pk, NODE_SIZE);
+    start = clock();
+    NewGraph(index, size, "./verthash.dat", pk);
+    end = clock();
+    cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
+    printf("Done generating PoS file: %f sec\n", cpu_time_used);
 
-    //printf("pk:");
-    //printBytes(pk, NODE_SIZE);
-    //printf("\n");
-
-    NewGraph(index, size, pow2, log2, "./verthash.dat", pk);
 }
-
