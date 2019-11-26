@@ -10,7 +10,7 @@
 #define N_INDEXES 18496
 #define N_INDEX_COMPONENTS 272
 
-const char* dat_file_name = "dat_file.dat";
+const char* dat_file_name = "verthash.dat";
 const char* input_header_hex = "000000203a297b4b7685170d7644b43e5a6056234cc2414edde454a87580e1967d14c1078c13ea916117b0608732f3f65c2e03b81322efc0a62bcee77d8a9371261970a58a5a715da80e031b02560ad8";
 
 int main() {
@@ -19,6 +19,8 @@ int main() {
     const size_t datfile_sz = ftell(datfile);
 
     fseek(datfile, 0, SEEK_SET);
+    
+    printf("allocating buffer...\n");
 
     unsigned char* blob_bytes = malloc(datfile_sz);
 
