@@ -390,7 +390,7 @@ void XiGraphIter(struct Graph* g, int64_t index) {
     }
 }
 
-struct Graph* NewGraph(int64_t index, int64_t size, char* fileName, uint8_t* pk) {
+struct Graph* NewGraph(int64_t index, char* fileName, uint8_t* pk) {
     uint8_t exists = 0;
     FILE* db;
     if((db = fopen(fileName, "r")) != NULL) {
@@ -399,7 +399,7 @@ struct Graph* NewGraph(int64_t index, int64_t size, char* fileName, uint8_t* pk)
     }
 
     db = fopen(fileName, "wb+");
-    
+    int64_t size = numXi(index);
     int64_t log2 = Log2(size) + 1;
     int64_t pow2 = 1 << ((uint64_t)log2);
     
@@ -424,12 +424,11 @@ int main() {
 
     printf("Generating PoS file...\n");
     int64_t index = 16;
-    int64_t size = 16777216;
     char* hashInput = "Vertcoin PoS PoC";
     uint8_t* pk = malloc(NODE_SIZE);
     sha3(hashInput, 16, pk, NODE_SIZE);
     start = clock();
-    NewGraph(index, size, "./verthash.dat", pk);
+    NewGraph(index, "./verthash.dat", pk);
     end = clock();
     cpu_time_used = ((double) (end - start)) / CLOCKS_PER_SEC;
     printf("Done generating PoS file: %f sec\n", cpu_time_used);
