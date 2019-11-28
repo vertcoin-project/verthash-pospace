@@ -10,17 +10,17 @@
 #define N_INDEXES 18496
 #define N_INDEX_COMPONENTS 272
 
-const char* dat_file_name = "dat_file.dat";
-const char* input_header_hex = "000000203a297b4b7685170d7644b43e5a6056234cc2414edde454a87580e1967d14c1078c13ea916117b0608732f3f65c2e03b81322efc0a62bcee77d8a9371261970a58a5a715da80e031b02560ad8";
+const char *dat_file_name = "dat_file.dat";
+const char *input_header_hex = "000000203a297b4b7685170d7644b43e5a6056234cc2414edde454a87580e1967d14c1078c13ea916117b0608732f3f65c2e03b81322efc0a62bcee77d8a9371261970a58a5a715da80e031b02560ad8";
 
 int main() {
-    FILE* datfile = fopen(dat_file_name, "rb");
+    FILE *datfile = fopen(dat_file_name, "rb");
     fseek(datfile, 0, SEEK_END);
     const size_t datfile_sz = ftell(datfile);
 
     fseek(datfile, 0, SEEK_SET);
 
-    unsigned char* blob_bytes = malloc(datfile_sz);
+    unsigned char *blob_bytes = malloc(datfile_sz);
 
     printf("reading data file...\n");
 
@@ -29,7 +29,7 @@ int main() {
 
     unsigned char input_header[HEADER_SIZE];
 
-    char* pos = input_header_hex;
+    char *pos = (char *) input_header_hex;
     for(size_t count = 0; count < HEADER_SIZE; count++) {
         sscanf(pos, "%2hhx", &input_header[count]);
         pos += 2;
@@ -43,49 +43,43 @@ int main() {
     start = clock();
 
     unsigned char p0[BLAKE2B_OUT_SIZE];
-    blake2b(&p0[0], BLAKE2B_OUT_SIZE, &input_header[0], HEADER_SIZE, NULL, 0);
+    blake2b(p0, BLAKE2B_OUT_SIZE, input_header, HEADER_SIZE, NULL, 0);
 
     unsigned char p1[BLAKE2B_OUT_SIZE];
     input_header[0] += 1;
-    blake2b(&p1[0], BLAKE2B_OUT_SIZE, &input_header[0], HEADER_SIZE, NULL, 0);
+    blake2b(p1, BLAKE2B_OUT_SIZE, input_header, HEADER_SIZE, NULL, 0);
 
-    uint32_t* p0_index = &p0[0];
+    uint32_t *p0_index = (uint32_t *) p0;
     uint32_t seek_index_components[N_INDEX_COMPONENTS];
     uint32_t seek_indexes[N_INDEXES];
 
     size_t n = 0;
     for(size_t x = 0; x < BLAKE2B_OUT_SIZE/sizeof(uint32_t); x++) {
+        uint32_t val1 = *(p0_index + x);
         for(size_t y = x; y < BLAKE2B_OUT_SIZE/sizeof(uint32_t); y++) {
-            uint32_t val1 = *(p0_index + x);
             uint32_t val2 = *(p0_index + y);
-            if(x != y) {
-                seek_index_components[n] = val1 ^ val2;
-            } else {
-                seek_index_components[n] = val1;
-            }
+            if(x != y) seek_index_components[n] = val1 ^ val2;
+            else seek_index_components[n] = val1;
             n++;
         }
     }
 
-    p0_index = &input_header[4];
+    p0_index = (uint32_t *) (input_header+4);
     for(size_t x = 0; x < BLAKE2B_OUT_SIZE/sizeof(uint32_t); x++) {
+        uint32_t val1 = *(p0_index + x);
         for(size_t y = x; y < BLAKE2B_OUT_SIZE/sizeof(uint32_t); y++) {
-            uint32_t val1 = *(p0_index + x);
             uint32_t val2 = *(p0_index + y);
-            if(x != y) {
-                seek_index_components[n] = val1 ^ val2;
-            } else {
-                seek_index_components[n] = val1;
-            }
+            if(x != y) seek_index_components[n] = val1 ^ val2;
+            else seek_index_components[n] = val1;
             n++;
         }
     }
 
-    p0_index = &seek_index_components[0];
+    p0_index = seek_index_components;
     n = 0;
     for(size_t x = 0; x < N_INDEX_COMPONENTS/2; x++) {
+        uint32_t val1 = *(p0_index + x);
         for(size_t y = N_INDEX_COMPONENTS/2; y < N_INDEX_COMPONENTS; y++) {
-            uint32_t val1 = *(p0_index + x);
             uint32_t val2 = *(p0_index + y);
             seek_indexes[n] = val1 ^ val2;
             n++;
