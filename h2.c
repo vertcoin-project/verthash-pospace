@@ -51,7 +51,7 @@ int main() {
 
     uint32_t *p0_index = (uint32_t *) p0;
     uint32_t seek_index_components[N_INDEX_COMPONENTS];
-    uint32_t seek_indexes[N_INDEXES];
+    uint32_t seek_indexes[N_INDEXES+1];
 
     size_t n = 0;
     for(size_t x = 0; x < SHA3_OUT_SIZE/sizeof(uint32_t); x++) {
@@ -91,10 +91,12 @@ int main() {
 
     printf("memory seeks...\n");
     start = clock();
+    uint32_t *p1_index = (uint32_t *) p1;
     for(size_t i = 0; i < N_INDEXES; i++) {
         for(size_t i2 = 0; i2 < SHA3_OUT_SIZE; i2++) {
             p1[i2] ^= *(blob_bytes + ((seek_indexes[i] + i2) % datfile_sz));
         }
+	seek_indexes[i+1] ^= *p1_index;
     }
     end = clock();
     cpu_time_used_mem = ((double) (end - start)) / CLOCKS_PER_SEC;
