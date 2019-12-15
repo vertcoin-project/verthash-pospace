@@ -75,11 +75,19 @@ int main() {
         }
     }
 
-    end = clock();
-    cpu_time_used_hashing = ((double) (end - start)) / CLOCKS_PER_SEC;
-
     unsigned char p1[CHUNK_SIZE];
     uint32_t *p1_index = (uint32_t *) p1;
+
+    input_header[0] += 1;
+    sha3(input_header, HEADER_SIZE, p1, SHA3_OUT_SIZE);
+
+    for(size_t i = 1; i < 64; i++) {
+	memcpy(p1+i*64, p1+i, 64-i);
+	memcpy(p1+i*64+(64-i), p1, i);
+    }
+
+    end = clock();
+    cpu_time_used_hashing = ((double) (end - start)) / CLOCKS_PER_SEC;
 
     printf("memory seeks...\n");
     start = clock();
@@ -87,8 +95,7 @@ int main() {
     for(size_t i = 0; i < N_INDEXES; i++) {
 	val1 = (seek_indexes[i] % ((datfile_sz-CHUNK_SIZE+16)/ALIGN)) * ALIGN/sizeof(uint32_t);
         for(size_t j = 0; j < CHUNK_SIZE/sizeof(uint32_t); j++) {
-            if(i==0) *(p1_index + j) = *(blob_index + val1 + j);
-            else *(p1_index + j) = ( *(p1_index + j) ^ *(blob_index + val1 + j) ) * 0x1000193;
+            *(p1_index + j) = ( *(p1_index + j) ^ *(blob_index + val1 + j) ) * 0x1000193;
 	    seek_indexes[i+1] ^= *(p1_index + j);
         }
     }
@@ -98,6 +105,7 @@ int main() {
 
     unsigned char hash[32];
     uint32_t *hash_index = (uint32_t *) hash;
+    memset(hash, 0, 32);
 
     for(size_t i = 0; i < 8; i++) {
         for(size_t j = 0; j < 128; j++) {
@@ -105,7 +113,7 @@ int main() {
 	}
     }
 
-    printf("Hash: ");
+    printf("hash: ");
     for(size_t i = 0; i < 32; i++) {
         printf("%02X", hash[i]);
     }
