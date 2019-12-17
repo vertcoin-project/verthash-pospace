@@ -102,10 +102,10 @@ int main() {
     uint32_t* p1_32 = &p1[0];
     uint32_t value_accumulator = 0;
     for(size_t i = 0; i < N_INDEXES; i++) {
-        const uint32_t index = seek_indexes[i] ^ value_accumulator; 
+        const uint32_t index = seek_indexes[i] ^ value_accumulator;
+        const uint32_t* blob_bytes_32 = blob_bytes + (index % (datfile_sz-HASH_OUT_SIZE));
         for(size_t i2 = 0; i2 < HASH_OUT_SIZE/sizeof(uint32_t); i2++) {
-            uint32_t* blob_bytes_32 = blob_bytes + ((index + i2) % datfile_sz);
-            const uint32_t value = *blob_bytes_32;
+            const uint32_t value = *(blob_bytes_32 + i2);
             *(p1_32 + i2) ^= value;
 
             value_accumulator ^= value;
