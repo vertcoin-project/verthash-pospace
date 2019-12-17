@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "BLAKE2/sse/blake2.h"
+#include "tiny_sha3/sha3.h"
 
 #define HEADER_SIZE 80
-#define BLAKE2B_OUT_SIZE 64
+#define HASH_OUT_SIZE 64
 #define N_INDEXES 18496
 #define N_INDEX_COMPONENTS 272
 
@@ -44,20 +44,20 @@ int main() {
 
     start = clock();
 
-    unsigned char p0[BLAKE2B_OUT_SIZE];
-    blake2b(&p0[0], BLAKE2B_OUT_SIZE, &input_header[0], HEADER_SIZE, NULL, 0);
+    unsigned char p0[HASH_OUT_SIZE];
+    sha3(&input_header[0], HEADER_SIZE, &p0[0], HASH_OUT_SIZE);
 
-    unsigned char p1[BLAKE2B_OUT_SIZE];
+    unsigned char p1[HASH_OUT_SIZE];
     input_header[0] += 1;
-    blake2b(&p1[0], BLAKE2B_OUT_SIZE, &input_header[0], HEADER_SIZE, NULL, 0);
+    sha3(&input_header[0], HEADER_SIZE, &p1[0], HASH_OUT_SIZE);
 
     uint32_t* p0_index = &p0[0];
     uint32_t seek_index_components[N_INDEX_COMPONENTS];
     uint32_t seek_indexes[N_INDEXES];
 
     size_t n = 0;
-    for(size_t x = 0; x < BLAKE2B_OUT_SIZE/sizeof(uint32_t); x++) {
-        for(size_t y = x; y < BLAKE2B_OUT_SIZE/sizeof(uint32_t); y++) {
+    for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
+        for(size_t y = x; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
             uint32_t val1 = *(p0_index + x);
             uint32_t val2 = *(p0_index + y);
             if(x != y) {
@@ -70,8 +70,8 @@ int main() {
     }
 
     p0_index = &input_header[4];
-    for(size_t x = 0; x < BLAKE2B_OUT_SIZE/sizeof(uint32_t); x++) {
-        for(size_t y = x; y < BLAKE2B_OUT_SIZE/sizeof(uint32_t); y++) {
+    for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
+        for(size_t y = x; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
             uint32_t val1 = *(p0_index + x);
             uint32_t val2 = *(p0_index + y);
             if(x != y) {
@@ -100,14 +100,14 @@ int main() {
     printf("memory seeks...\n");
     start = clock();
     for(size_t i = 0; i < N_INDEXES; i++) {
-        for(size_t i2 = 0; i2 < BLAKE2B_OUT_SIZE; i2++) {
+        for(size_t i2 = 0; i2 < HASH_OUT_SIZE; i2++) {
             p1[i2] ^= *(blob_bytes + ((seek_indexes[i] + i2) % datfile_sz));
         }
     }
     end = clock();
     cpu_time_used_mem = ((double) (end - start)) / CLOCKS_PER_SEC;
 
-    for(size_t i = 0; i < BLAKE2B_OUT_SIZE; i++) {
+    for(size_t i = 0; i < HASH_OUT_SIZE; i++) {
         printf("%02X", p1[i]);
     }
     printf("\n");
