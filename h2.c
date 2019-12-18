@@ -31,7 +31,11 @@ int main() {
 
     printf("reading data file...\n");
 
-    fread(blob_bytes, 1, datfile_sz, datfile);
+    const size_t bytes_read = fread(blob_bytes, 1, datfile_sz, datfile);
+    if(bytes_read != datfile_sz) {
+        return -1;
+    }
+
     fclose(datfile);
 
     unsigned char input_header[HEADER_SIZE];

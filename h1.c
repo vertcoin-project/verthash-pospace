@@ -88,7 +88,10 @@ uint8_t *GetId(struct Graph *g, const int64_t id)
 {
     fseek(g->db, id * NODE_SIZE, SEEK_SET);
     uint8_t *node = malloc(NODE_SIZE);
-    fread(node, 1, NODE_SIZE, g->db);
+    const size_t bytes_read = fread(node, 1, NODE_SIZE, g->db);
+    if(bytes_read != NODE_SIZE) {
+        return NULL;
+    }
     return node;
 }
 
