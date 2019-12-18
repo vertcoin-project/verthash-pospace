@@ -9,9 +9,14 @@
 #define HASH_OUT_SIZE 64
 #define N_INDEXES 18496
 #define N_INDEX_COMPONENTS 272
+#define BYTE_ALIGNMENT 16
 
 const char* dat_file_name = "verthash.dat";
 const char* input_header_hex = "000000203a297b4b7685170d7644b43e5a6056234cc2414edde454a87580e1967d14c1078c13ea916117b0608732f3f65c2e03b81322efc0a62bcee77d8a9371261970a58a5a715da80e031b02560ad8";
+
+inline uint32_t fnv1a(const uint32_t a, const uint32_t b) {
+    return (a ^ b) * 0x1000193;
+}
 
 int main() {
     FILE* datfile = fopen(dat_file_name, "rb");
@@ -57,11 +62,11 @@ int main() {
 
     size_t n = 0;
     for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
+        const uint32_t val1 = *(p0_index + x);
         for(size_t y = x; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
-            uint32_t val1 = *(p0_index + x);
-            uint32_t val2 = *(p0_index + y);
+            const uint32_t val2 = *(p0_index + y);
             if(x != y) {
-                seek_index_components[n] = val1 ^ val2;
+                seek_index_components[n] = fnv1a(val1, val2);
             } else {
                 seek_index_components[n] = val1;
             }
@@ -71,11 +76,11 @@ int main() {
 
     p0_index = &input_header[4];
     for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
+        const uint32_t val1 = *(p0_index + x);
         for(size_t y = x; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
-            uint32_t val1 = *(p0_index + x);
-            uint32_t val2 = *(p0_index + y);
+            const uint32_t val2 = *(p0_index + y);
             if(x != y) {
-                seek_index_components[n] = val1 ^ val2;
+                seek_index_components[n] = fnv1a(val1, val2);
             } else {
                 seek_index_components[n] = val1;
             }
@@ -86,10 +91,10 @@ int main() {
     p0_index = &seek_index_components[0];
     n = 0;
     for(size_t x = 0; x < N_INDEX_COMPONENTS/2; x++) {
+        const uint32_t val1 = *(p0_index + x);
         for(size_t y = N_INDEX_COMPONENTS/2; y < N_INDEX_COMPONENTS; y++) {
-            uint32_t val1 = *(p0_index + x);
-            uint32_t val2 = *(p0_index + y);
-            seek_indexes[n] = val1 ^ val2;
+            const uint32_t val2 = *(p0_index + y);
+            seek_indexes[n] = fnv1a(val1, val2);
             n++;
         }
     }
@@ -102,15 +107,17 @@ int main() {
     uint32_t* p1_32 = &p1[0];
     uint32_t value_accumulator = 0;
     for(size_t i = 0; i < N_INDEXES; i++) {
-        const uint32_t index = seek_indexes[i] ^ value_accumulator;
+        const uint32_t index = ((seek_indexes[i] ^ value_accumulator) + BYTE_ALIGNMENT - 1) & -BYTE_ALIGNMENT;
         const uint32_t* blob_bytes_32 = blob_bytes + (index % (datfile_sz-HASH_OUT_SIZE));
         for(size_t i2 = 0; i2 < HASH_OUT_SIZE/sizeof(uint32_t); i2++) {
             const uint32_t value = *(blob_bytes_32 + i2);
-            *(p1_32 + i2) ^= value;
+            uint32_t* p1_ptr = p1_32 + i2;
+            *p1_ptr = fnv1a(*p1_ptr, value);
 
-            value_accumulator ^= value;
+            value_accumulator = fnv1a(value_accumulator, value);
         }
     }
+
     end = clock();
     cpu_time_used_mem = ((double) (end - start)) / CLOCKS_PER_SEC;
 
