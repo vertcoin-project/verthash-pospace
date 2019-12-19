@@ -106,12 +106,12 @@ int main() {
     printf("memory seeks...\n");
     start = clock();
     uint32_t* p1_32 = (uint32_t*)p1;
+    uint32_t* blob_bytes_32 = (uint32_t*)blob_bytes;
     uint32_t value_accumulator = 0;
     for(size_t i = 0; i < N_INDEXES; i++) {
-        const uint32_t index = (fnv1a(seek_indexes[i], value_accumulator) + BYTE_ALIGNMENT - 1) & -BYTE_ALIGNMENT;
-        const uint32_t* blob_bytes_32 = (uint32_t*)(blob_bytes + (index % (datfile_sz-HASH_OUT_SIZE)));
+        const uint32_t offset = (fnv1a(seek_indexes[i], value_accumulator) % ((datfile_sz-HASH_OUT_SIZE+BYTE_ALIGNMENT)/BYTE_ALIGNMENT)) * BYTE_ALIGNMENT/sizeof(uint32_t); 
         for(size_t i2 = 0; i2 < HASH_OUT_SIZE/sizeof(uint32_t); i2++) {
-            const uint32_t value = *(blob_bytes_32 + i2);
+            const uint32_t value = *(blob_bytes_32 + offset + i2);
             uint32_t* p1_ptr = p1_32 + i2;
             *p1_ptr = fnv1a(*p1_ptr, value);
 
