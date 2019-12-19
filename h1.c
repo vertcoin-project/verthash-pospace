@@ -103,6 +103,7 @@ uint8_t *GetNode(struct Graph *g, const int64_t id)
 
 uint32_t WriteVarInt(uint8_t *buffer, int64_t val)
 {
+    memset(buffer, 0, NODE_SIZE);
     uint64_t uval = ((uint64_t)(val)) << 1;
     if (val < 0)
     {
@@ -181,12 +182,12 @@ void XiGraphIter(struct Graph *g, int64_t index)
 
     int8_t stackSize = 5;
     int64_t *stack = malloc(sizeof(int64_t) * stackSize);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < stackSize; i++)
         stack[i] = index;
 
     int8_t graphStackSize = 5;
     int32_t *graphStack = malloc(sizeof(int32_t) * graphStackSize);
-    for (int i = 0; i < 5; i++)
+    for (int i = 0; i < graphStackSize; i++)
         graphStack[i] = graphStackSize - i - 1;
 
     int64_t i = 0;
@@ -236,7 +237,7 @@ void XiGraphIter(struct Graph *g, int64_t index)
         if (graphStackSize > 0)
         {
             int32_t *tempGraphStack = malloc(sizeof(int32_t) * (graphStackSize));
-            memcpy(tempGraphStack, graphStack, sizeof(int32_t) * (stackSize));
+            memcpy(tempGraphStack, graphStack, sizeof(int32_t) * (graphStackSize));
             free(graphStack);
             graphStack = tempGraphStack;
         }
