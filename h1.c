@@ -165,6 +165,12 @@ void ButterflyGraph(struct Graph *g, int64_t index, int64_t *count)
 
             NewNode(g, *count, hashOutput);
             (*count)++;
+            
+            free(hashOutput);
+            free(hashInput);
+            free(parent0);
+            free(parent1);
+            free(buf);
         }
     }
 }
@@ -197,8 +203,12 @@ void XiGraphIter(struct Graph *g, int64_t index)
         uint8_t *hashOutput = malloc(NODE_SIZE);
 
         sha3(hashInput, NODE_SIZE * 2, hashOutput, NODE_SIZE);
-        NewNode(g, count, hashOutput);
+        NewNode(g, count, hashOutput);        
         count++;
+        
+        free(hashOutput);
+        free(hashInput);
+        free(buf);
     }
 
     if (index == 1)
@@ -266,6 +276,12 @@ void XiGraphIter(struct Graph *g, int64_t index)
 
                 NewNode(g, count, hashOutput);
                 count++;
+                
+                free(hashOutput);
+                free(hashInput);
+                free(parent0);
+                free(parent1);
+                free(buf);
             }
         }
         else if (graph == 1)
@@ -289,6 +305,11 @@ void XiGraphIter(struct Graph *g, int64_t index)
 
                 NewNode(g, count, hashOutput);
                 count++;
+                
+                free(hashOutput);
+                free(hashInput);
+                free(parent);
+                free(buf);
             }
         }
         else if (graph == 2)
@@ -312,6 +333,11 @@ void XiGraphIter(struct Graph *g, int64_t index)
 
                 NewNode(g, count, hashOutput);
                 count++;
+                
+                free(hashOutput);
+                free(hashInput);
+                free(parent);
+                free(buf);
             }
         }
         else if (graph == 3)
@@ -335,6 +361,11 @@ void XiGraphIter(struct Graph *g, int64_t index)
 
                 NewNode(g, count, hashOutput);
                 count++;
+                
+                free(hashOutput);
+                free(hashInput);
+                free(parent);
+                free(buf);
             }
         }
         else
@@ -374,6 +405,14 @@ void XiGraphIter(struct Graph *g, int64_t index)
                 NewNode(g, nodeId0, hashOutput0);
                 NewNode(g, nodeId1, hashOutput1);
                 count += 2;
+                
+                free(parent0);
+                free(parent1_0);
+                free(parent1_1);
+                free(buf);
+                free(hashInput);
+                free(hashOutput0);
+                free(hashOutput1);
             }
         }
 
@@ -399,7 +438,13 @@ void XiGraphIter(struct Graph *g, int64_t index)
             free(graphStack);
             graphStack = tempGraphStack;
         }
+        
+        free(indices);
+        free(graphs);
     }
+    
+    free(stack);
+    free(graphStack);
 }
 
 struct Graph *NewGraph(int64_t index, char *fileName, uint8_t *pk)
