@@ -43,7 +43,7 @@ int main() {
         sscanf(input_header_hex + count*2, "%2hhx", &input_header[count]);
     }
 
-    printf("blake2b hashes...\n");
+    printf("SHA3 hashes...\n");
 
     clock_t start, end;
     double cpu_time_used_hashing, cpu_time_used_mem;
