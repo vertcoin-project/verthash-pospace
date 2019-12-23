@@ -6,9 +6,14 @@
 #include "tiny_sha3/sha3.h"
 
 #define HEADER_SIZE 80
+#define PREV_COINB_SIZE 64
 #define HASH_OUT_SIZE 32
-#define N_INDEXES 784
-#define N_INDEX_COMPONENTS 56
+// (8*(8-1))/2 * (16*(16-1))/2
+#define N_INDEXES 3360
+// (8*(8-1))/2 
+#define N_P0_COMPONENTS 28
+// (16*(16-1))/2
+#define N_PREV_COINB_COMPONENTS 120
 #define BYTE_ALIGNMENT 16
 
 const char* dat_file_name = "verthash.dat";
@@ -58,7 +63,7 @@ int main() {
     sha3(&input_header[0], HEADER_SIZE, &p1[0], HASH_OUT_SIZE);
 
     uint32_t* p0_index = (uint32_t*)p0;
-    uint32_t seek_index_components[N_INDEX_COMPONENTS];
+    uint32_t seek_index_components[N_P0_COMPONENTS+N_PREV_COINB_COMPONENTS];
     uint32_t seek_indexes[N_INDEXES];
 
     size_t n = 0;
@@ -72,9 +77,9 @@ int main() {
     }
 
     p0_index = (uint32_t*)(input_header + 4);
-    for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
+    for(size_t x = 0; x < PREV_COINB_SIZE/sizeof(uint32_t); x++) {
         const uint32_t val1 = *(p0_index + x);
-        for(size_t y = x+1; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
+        for(size_t y = x+1; y < PREV_COINB_SIZE/sizeof(uint32_t); y++) {
             const uint32_t val2 = *(p0_index + y);
             seek_index_components[n] = fnv1a(val1, val2);
             n++;
@@ -83,9 +88,9 @@ int main() {
 
     p0_index = &seek_index_components[0];
     n = 0;
-    for(size_t x = 0; x < N_INDEX_COMPONENTS/2; x++) {
+    for(size_t x = 0; x < N_P0_COMPONENTS; x++) {
         const uint32_t val1 = *(p0_index + x);
-        for(size_t y = N_INDEX_COMPONENTS/2; y < N_INDEX_COMPONENTS; y++) {
+        for(size_t y = N_P0_COMPONENTS; y < N_P0_COMPONENTS+N_PREV_COINB_COMPONENTS; y++) {
             const uint32_t val2 = *(p0_index + y);
             seek_indexes[n] = fnv1a(val1, val2);
             n++;
