@@ -6,9 +6,9 @@
 #include "tiny_sha3/sha3.h"
 
 #define HEADER_SIZE 80
-#define HASH_OUT_SIZE 64
-#define N_INDEXES 18496
-#define N_INDEX_COMPONENTS 272
+#define HASH_OUT_SIZE 32
+#define N_INDEXES 784
+#define N_INDEX_COMPONENTS 56
 #define BYTE_ALIGNMENT 16
 
 const char* dat_file_name = "verthash.dat";
@@ -64,13 +64,9 @@ int main() {
     size_t n = 0;
     for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
         const uint32_t val1 = *(p0_index + x);
-        for(size_t y = x; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
+        for(size_t y = x+1; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
             const uint32_t val2 = *(p0_index + y);
-            if(x != y) {
-                seek_index_components[n] = fnv1a(val1, val2);
-            } else {
-                seek_index_components[n] = val1;
-            }
+            seek_index_components[n] = fnv1a(val1, val2);
             n++;
         }
     }
@@ -78,13 +74,9 @@ int main() {
     p0_index = (uint32_t*)(input_header + 4);
     for(size_t x = 0; x < HASH_OUT_SIZE/sizeof(uint32_t); x++) {
         const uint32_t val1 = *(p0_index + x);
-        for(size_t y = x; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
+        for(size_t y = x+1; y < HASH_OUT_SIZE/sizeof(uint32_t); y++) {
             const uint32_t val2 = *(p0_index + y);
-            if(x != y) {
-                seek_index_components[n] = fnv1a(val1, val2);
-            } else {
-                seek_index_components[n] = val1;
-            }
+            seek_index_components[n] = fnv1a(val1, val2);
             n++;
         }
     }
