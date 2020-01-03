@@ -103,8 +103,8 @@ int main() {
     uint32_t* p1_32 = (uint32_t*)p1;
     uint32_t* blob_bytes_32 = (uint32_t*)blob_bytes;
     uint32_t value_accumulator = 0;
+    const uint32_t mdiv = ((datfile_sz - HASH_OUT_SIZE)/BYTE_ALIGNMENT) + 1;
     for(size_t i = 0; i < N_INDEXES; i++) {
-        const uint32_t mdiv = ((datfile_sz - HASH_OUT_SIZE)/BYTE_ALIGNMENT) + 1;
         const uint32_t offset = (fnv1a(seek_indexes[i], value_accumulator) % mdiv) * BYTE_ALIGNMENT/sizeof(uint32_t); 
         for(size_t i2 = 0; i2 < HASH_OUT_SIZE/sizeof(uint32_t); i2++) {
             const uint32_t value = *(blob_bytes_32 + offset + i2);
