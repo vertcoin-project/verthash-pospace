@@ -57,7 +57,7 @@ int main() {
     unsigned char p1[HASH_OUT_SIZE];
     sha3(&input_header[0], HEADER_SIZE, &p1[0], HASH_OUT_SIZE);
 
-    unsigned char p0[N_SUBSET+2];
+    unsigned char p0[N_SUBSET];
 
     for(size_t i = 0; i < N_ITER; i++) {
     	input_header[0] += 1;
@@ -68,8 +68,7 @@ int main() {
     uint32_t seek_indexes[N_INDEXES];
 
     for(size_t x = 0; x < N_ROT; x++) {
-        memcpy(p0+N_SUBSET, p0, 2);
-    	memcpy(seek_indexes+x*(N_SUBSET/sizeof(uint32_t)), p0+2, N_SUBSET);
+    	memcpy(seek_indexes+x*(N_SUBSET/sizeof(uint32_t)), p0, N_SUBSET);
     	for(size_t y = 0; y < N_SUBSET/sizeof(uint32_t); y++) {
 	    *(p0_index + y) = (*(p0_index + y) << 1) | (1 & (*(p0_index + y) >> 31));
 	}
