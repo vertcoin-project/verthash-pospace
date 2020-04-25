@@ -27,6 +27,13 @@ int main() {
     fseek(datfile, 0, SEEK_END);
     const size_t datfile_sz = ftell(datfile);
 
+    size_t n;
+    for(n=1; n<=36; n++) {
+        if((datfile_sz-16) < 1UL<<n) break;
+    }
+    const uint32_t bitmask = 0xffffffff >> (37-n);
+    printf("bitmask: 0x%08x\n", bitmask);
+
     fseek(datfile, 0, SEEK_SET);
     
     printf("allocating buffer...\n");
@@ -82,9 +89,9 @@ int main() {
     uint32_t* p1_32 = (uint32_t*)p1;
     uint32_t* blob_bytes_32 = (uint32_t*)blob_bytes;
     uint32_t value_accumulator = 0x811c9dc5;
-    const uint32_t mdiv = ((datfile_sz - HASH_OUT_SIZE)/BYTE_ALIGNMENT) + 1;
+
     for(size_t i = 0; i < N_INDEXES; i++) {
-        const uint32_t offset = (fnv1a(seek_indexes[i], value_accumulator) % mdiv) * BYTE_ALIGNMENT/sizeof(uint32_t); 
+        const size_t offset = (fnv1a(seek_indexes[i], value_accumulator) & bitmask ) * BYTE_ALIGNMENT/sizeof(uint32_t); 
         for(size_t i2 = 0; i2 < HASH_OUT_SIZE/sizeof(uint32_t); i2++) {
             const uint32_t value = *(blob_bytes_32 + offset + i2);
             uint32_t* p1_ptr = p1_32 + i2;
