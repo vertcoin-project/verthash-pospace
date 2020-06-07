@@ -1,7 +1,6 @@
 from setuptools import setup, Extension
 
 verthashsources = [
-	'h1.c',
 	'h2.c',
        'tiny_sha3/sha3.c'
 ]
