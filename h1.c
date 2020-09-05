@@ -29,37 +29,9 @@ int64_t Log2(int64_t x)
     return r;
 }
 
-int64_t subtree(struct Graph *g, const int64_t node)
-{
-    int64_t level = (g->log2 + 1) - Log2(node);
-    return (int64_t)((1 << (uint64_t)level) - 1);
-}
-
 int64_t bfsToPost(struct Graph *g, const int64_t node)
 {
-    if (node == 0)
-    {
-        return 0;
-    }
-
-    int64_t cur = node;
-    int64_t res = 0;
-
-    while (cur != 1)
-    {
-        if (cur % 2 == 0)
-        {
-            res -= subtree(g, cur) + 1;
-        }
-        else
-        {
-            res--;
-        }
-        cur /= 2;
-    }
-    res += 2 * g->pow2 - 1;
-
-    return res;
+    return node & ~g->pow2;
 }
 
 int64_t numXi(int64_t index)
@@ -485,7 +457,7 @@ int main()
     double cpu_time_used;
 
     printf("Generating PoS file...\n");
-    int64_t index = 16;
+    int64_t index = 17;
     char *hashInput = "Vertcoin PoS PoC";
     uint8_t *pk = malloc(NODE_SIZE);
     sha3(hashInput, 16, pk, NODE_SIZE);
