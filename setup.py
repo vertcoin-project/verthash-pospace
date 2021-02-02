@@ -12,6 +12,7 @@ verthashincludes = [
 
 verthash_module = Extension('verthash',
                             sources=verthashsources+['verthashmodule.c'],
+                            extra_compile_args=['-std=c99'],
                             include_dirs=verthashincludes)
 
 setup(name = 'verthash',
